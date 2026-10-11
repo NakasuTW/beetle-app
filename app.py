@@ -172,14 +172,14 @@ else:
                 info = INSECT_DB.get(class_name, None)
                 
                 if info:
-                    st.markdown(f"🌸 **中文名稱**：{info['chinese_name']}")
-                    st.markdown(f"🌿 **屬性**：{info['family']}")
-                    st.markdown(f"🎨 **外觀特徵**：{info['appearance']}")
-                    st.markdown(f"🏵️ **生態意涵**：{info['meaning']}")
-                    st.markdown(f"🌱 **生長季節**：{info['season']}")
-                    st.markdown(f"📍 **分佈**：{info['distribution']}")
-                    st.markdown(f"⚠️ **毒性警告**：{info['warning']}")
-                    st.markdown(f"🌍 **環保與保育資訊**：{info['eco_value']}")
+                    st.markdown(f"**中文名稱**：{info['chinese_name']}")
+                    st.markdown(f"**屬性**：{info['family']}")
+                    st.markdown(f"**外觀特徵**：{info['appearance']}")
+                    st.markdown(f"**生態意涵**：{info['meaning']}")
+                    st.markdown(f"**生長季節**：{info['season']}")
+                    st.markdown(f"**分佈**：{info['distribution']}")
+                    st.markdown(f"**毒性警告**：{info['warning']}")
+                    st.markdown(f"**環保與保育資訊**：{info['eco_value']}")
                 else:
                     st.warning(f"目前資料庫中尚未建檔『{class_name}』的詳細百科資訊。")
             else:
