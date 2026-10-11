@@ -116,7 +116,7 @@ with st.sidebar:
                 st.button("🔗 分享", key=f"sh_{i}", use_container_width=True)
 
 # ==========================================
-# 5. 主畫面設計 (Main Page) (維持不變)
+# 5. 主畫面設計 (Main Page)
 # ==========================================
 st.title("🪲 昆蟲辨識小助理")
 st.write("探索自然世界，學習昆蟲知識，感受生態之美！")
@@ -136,17 +136,18 @@ elif source_option == "拍照":
         image = Image.open(camera_file)
 
 # ==========================================
-# 6. 辨識與結果顯示 (已縮小圖片)
+# 6. 辨識與結果顯示 (已修正顯示邏輯)
 # ==========================================
-st.markdown("### 辨識結果")
-
 if image is None:
     st.info("請先上傳或拍攝圖片")
 else:
-    # 🔽 這裡把 use_container_width=True 改成了 width=500
-    st.image(image, caption='輸入的圖片', width=500)
+    # 這裡純粹當作上傳後的預覽，不再顯示「辨識結果」標題
+    st.image(image, caption='圖片預覽', width=500)
 
     if st.button('開始辨識', type="primary"):
+        # 🔽 將「辨識結果」的標題移到這裡，按下按鈕後才會出現
+        st.markdown("### 辨識結果")
+        
         with st.spinner('辨識中，請稍候...'):
             # 執行 YOLO 偵測
             results = model(image)
@@ -154,7 +155,7 @@ else:
             boxes = results[0].boxes
             
             st.markdown("---")
-            # 🔽 這裡也把 use_container_width=True 改成了 width=500
+            # 顯示 AI 畫上框線的偵測結果
             st.image(res_plotted, channels="BGR", caption='AI 偵測結果', width=500)
             
             # 若有偵測到物件，則顯示詳細資訊
@@ -167,7 +168,7 @@ else:
                 # 顯示學名與信心分數
                 st.markdown(f"**物種學名： {class_name}** (信心分數：{confidence:.2f})")
                 
-                # 去字典裡尋找對應的詳細資料，若無則顯示預設值
+                # 去字典裡尋找對應的詳細資料
                 info = INSECT_DB.get(class_name, None)
                 
                 if info:
