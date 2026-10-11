@@ -8,7 +8,7 @@ from PIL import Image
 st.set_page_config(page_title="昆蟲辨識小助理", page_icon="🪲", layout="wide")
 
 # ==========================================
-# 2. 建立昆蟲資料庫字典 (維持不變)
+# 2. 建立昆蟲資料庫字典
 # ==========================================
 # 這裡的 Key 必須對應你 YOLO 模型的 class name
 INSECT_DB = {
@@ -72,9 +72,7 @@ INSECT_DB = {
         "warning": "安全無毒。",
         "eco_value": "成蟲極度喜愛吸食殼斗科等樹木的汁液與過熟腐果，是森林冠層中常見的訪客，對於維持森林生態系的物質循環扮演著重要角色。"
     }
-    
 }
-    
 
 
 # ==========================================
@@ -83,7 +81,7 @@ INSECT_DB = {
 @st.cache_resource
 def load_model():
     # 請確保這裡是正確的最佳權重路徑
-   return YOLO('best.pt')
+    return YOLO('best.pt')
 model = load_model()
 
 # ==========================================
@@ -138,15 +136,15 @@ elif source_option == "拍照":
         image = Image.open(camera_file)
 
 # ==========================================
-# 6. 辨識與結果顯示 (維持不變)
+# 6. 辨識與結果顯示 (已縮小圖片)
 # ==========================================
 st.markdown("### 辨識結果")
 
 if image is None:
     st.info("請先上傳或拍攝圖片")
 else:
-    # 顯示原始/拍攝的圖片
-    st.image(image, caption='輸入的圖片', use_container_width=True)
+    # 🔽 這裡把 use_container_width=True 改成了 width=500
+    st.image(image, caption='輸入的圖片', width=500)
 
     if st.button('開始辨識', type="primary"):
         with st.spinner('辨識中，請稍候...'):
@@ -156,7 +154,8 @@ else:
             boxes = results[0].boxes
             
             st.markdown("---")
-            st.image(res_plotted, channels="BGR", caption='AI 偵測結果', use_container_width=True)
+            # 🔽 這裡也把 use_container_width=True 改成了 width=500
+            st.image(res_plotted, channels="BGR", caption='AI 偵測結果', width=500)
             
             # 若有偵測到物件，則顯示詳細資訊
             if len(boxes) > 0:
