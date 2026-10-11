@@ -62,7 +62,7 @@ INSECT_DB = {
         "warning": "安全無毒。",
         "eco_value": "成蟲具有強烈的趨花性，白天常成群聚集在花朵上吸食花蜜或花粉，是自然界中極為重要的授粉昆蟲；幼蟲則以土壤中的腐植質為食，能有效促進有機物質循環，對維持環境生態平衡很有幫助。"
     },
-    "Thaumastopeus shangaicus": {
+    "Thaumastopeus shanghaicus": {
         "chinese_name": "綠豔羅花金龜",
         "family": "金龜子科 (Scarabaeidae)",
         "appearance": "體表呈現極具光澤的金屬綠色，體型較大且背部略呈扁平，宛如閃耀的綠寶石，部分個體邊緣會帶有微弱的紅銅色光澤。",
