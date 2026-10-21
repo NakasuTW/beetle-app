@@ -3,13 +3,16 @@ from ultralytics import YOLO
 from PIL import Image
 
 # ==========================================
-# 1. 網頁基本設定
+# 1. 網頁基本設定 (需放在最上方)
 # ==========================================
-st.set_page_config(page_title="昆蟲辨識系統", page_icon="🪲", layout="centered")
-
+st.set_page_config(page_title="昆蟲辨識小助理", page_icon="🪲", layout="wide")
+# ✨ 【魔法 1】：初始化 Session State 來儲存歷史紀錄
+if 'history' not in st.session_state:
+    st.session_state.history = []
 # ==========================================
 # 2. 建立昆蟲資料庫字典
 # ==========================================
+# 這裡的 Key 必須對應你 YOLO 模型的 class name
 INSECT_DB = {
     "Gymnopleurus": {
         "chinese_name": "推糞金龜",
@@ -73,35 +76,53 @@ INSECT_DB = {
     }
 }
 
+
 # ==========================================
 # 3. 載入模型
 # ==========================================
 @st.cache_resource
 def load_model():
-    # 請確保這裡是正確的最佳權重路徑
     return YOLO('best.pt')
-
 model = load_model()
 
 # ==========================================
-# 4. 側邊欄設計 (Sidebar)
+# 4. 側邊欄設計 (Sidebar) - 動態歷史紀錄
 # ==========================================
 with st.sidebar:
-    st.markdown("### 📷 影像來源")
-    source_option = st.radio("請選擇輸入方式", ["上傳圖片", "拍照"])
+    st.markdown("### 🌐 選擇語言")
+    language = st.selectbox("", ["中文", "English", "日本語", "한국어"], label_visibility="collapsed")
+    
+    st.markdown("### 功能選項")
+    source_option = st.radio("選擇來源", ["拍照", "上傳圖片"])
+    
+    # ✨ 【魔法 2】：將 Session State 裡的資料動態渲染成手風琴選單
+    st.markdown("### 歷史記錄")
+    if len(st.session_state.history) == 0:
+        st.info("尚無辨識紀錄")
+    else:
+        # 使用 reversed 讓最新辨識的結果排在最上面
+        for idx, record in enumerate(reversed(st.session_state.history)):
+            with st.expander(f"🪲 {record['class_name']}"):
+                # 顯示 AI 畫好框的縮圖
+                st.image(record['image'], caption="辨識圖片", use_container_width=True)
+                # 顯示分數點列，還原參考圖風格
+                st.markdown(f"• **{record['class_name']}** (信心分數：{record['confidence']:.2f})")
 
 # ==========================================
-# 5. 主畫面設計
+# 5. 主畫面設計 (Main Page)
 # ==========================================
-st.title("🪲 昆蟲辨識系統")
+st.title("🪲 昆蟲辨識小助理")
+st.write("探索自然世界，學習昆蟲知識，感受生態之美！")
 st.markdown("---")
 
 image = None
 if source_option == "上傳圖片":
+    st.markdown("### 📥 上傳圖片")
     uploaded_file = st.file_uploader("請上傳昆蟲圖片", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         image = Image.open(uploaded_file)
 elif source_option == "拍照":
+    st.markdown("### 📷 拍攝圖片")
     camera_file = st.camera_input("請拍攝昆蟲")
     if camera_file:
         image = Image.open(camera_file)
@@ -112,33 +133,26 @@ elif source_option == "拍照":
 if image is None:
     st.info("請先上傳或拍攝圖片")
 else:
-    # 預覽原始圖片
-    st.image(image, caption='原始圖片', width=500)
+    st.image(image, caption='圖片預覽', width=500)
 
     if st.button('開始辨識', type="primary"):
         st.markdown("### 辨識結果")
         
-        with st.spinner('AI 努力辨識中，請稍候...'):
-            # 執行 YOLO 偵測
+        with st.spinner('辨識中，請稍候...'):
             results = model(image)
             res_plotted = results[0].plot()
             boxes = results[0].boxes
             
             st.markdown("---")
-            # 顯示 AI 畫上框線的偵測結果圖
             st.image(res_plotted, channels="BGR", caption='AI 偵測結果', width=500)
             
-            # 判斷是否有偵測到物件
             if len(boxes) > 0:
-                # 取出信心度最高的第一個物件
                 top_class_id = int(boxes[0].cls[0])
                 confidence = float(boxes[0].conf[0])
                 class_name = model.names[top_class_id]
                 
-                # 顯示學名與分數
-                st.success(f"🎯 **偵測到物種學名： {class_name}** (信心分數：{confidence:.2f})")
+                st.markdown(f"**物種學名： {class_name}** (信心分數：{confidence:.2f})")
                 
-                # 從字典中查找詳細百科資訊
                 info = INSECT_DB.get(class_name, None)
                 if info:
                     st.markdown(f"**中文名稱**：{info['chinese_name']}")
@@ -151,5 +165,16 @@ else:
                     st.markdown(f"**環保與保育資訊**：{info['eco_value']}")
                 else:
                     st.warning(f"目前資料庫中尚未建檔『{class_name}』的詳細百科資訊。")
+
+                # ✨ 【魔法 3】：成功辨識後，將資料打包存入 Session State 中
+                st.session_state.history.append({
+                    "class_name": class_name,
+                    "confidence": confidence,
+                    "image": res_plotted  # 儲存畫好 AI 框線的圖片，這樣歷史紀錄看起來更專業
+                })
+                
             else:
                 st.warning("圖片中沒有偵測到已知的昆蟲。")
+                
+st.markdown("---")
+st.caption("✨ 探索自然，從身邊的昆蟲開始！保護野生動物，維護生態多樣性。")
