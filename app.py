@@ -134,9 +134,9 @@ elif source_option == "拍照":
 if image is None:
     st.info("請先上傳或拍攝圖片")
 else:
-    st.image(image, caption='原始圖片', width=500)
+   st.image(image, caption='原始圖片', use_container_width=True)
 
-    if st.button('開始辨識', type="primary"):
+if st.button('開始辨識', type="primary"):
         st.markdown("### 辨識結果")
         
         with st.spinner('AI 努力辨識中，請稍候...'):
@@ -145,7 +145,7 @@ else:
             boxes = results[0].boxes
             
             st.markdown("---")
-            st.image(res_plotted, channels="BGR", caption='AI 偵測結果', width=500)
+            st.image(res_plotted, channels="BGR", caption='AI 偵測結果', use_container_width=True)
             
             if len(boxes) > 0:
                 top_class_id = int(boxes[0].cls[0])
