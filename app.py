@@ -6,7 +6,7 @@ import io
 # ==========================================
 # 1. 網頁基本設定
 # ==========================================
-st.set_page_config(page_title="昆蟲辨識系統", page_icon="🪲", layout="centered")
+st.set_page_config(page_title="昆蟲辨識小助理", page_icon="🪲", layout="centered")
 
 # 初始化 Session State 來儲存歷史紀錄
 if 'history' not in st.session_state:
@@ -88,7 +88,7 @@ def load_model():
 model = load_model()
 
 # ==========================================
-# 4. 側邊欄設計 (Sidebar) - 歷史紀錄與功能按鈕
+# 4. 側邊欄設計 (Sidebar)
 # ==========================================
 with st.sidebar:
     st.markdown("### 📷 影像來源")
@@ -106,17 +106,14 @@ with st.sidebar:
     if len(st.session_state.history) == 0:
         st.info("目前尚無辨識紀錄")
     else:
-        # 讓最新辨識的紀錄排在最上面，並標示為 記錄 1, 記錄 2...
         for idx, record in enumerate(reversed(st.session_state.history)):
             with st.expander(f"記錄 {idx + 1}"):
                 st.image(record['image'], channels="BGR", caption="AI 偵測結果", use_container_width=True)
                 st.markdown(f"**學名**: {record['class_name']}")
                 st.markdown(f"**分數**: {record['confidence']:.2f}")
                 
-                # 建立兩列來放置 下載 與 分享 按鈕
                 col1, col2 = st.columns(2)
                 with col1:
-                    # 準備下載的文字內容
                     report_text = f"【昆蟲辨識紀錄】\n學名：{record['class_name']}\n信心分數：{record['confidence']:.2f}"
                     st.download_button(
                         label="📥 下載",
@@ -126,22 +123,24 @@ with st.sidebar:
                         use_container_width=True
                     )
                 with col2:
-                    # 分享按鈕 (使用 Toast 提示模擬分享成功)
                     if st.button("🔗 分享", key=f"sh_{idx}", use_container_width=True):
                         st.toast("✅ 分享連結已成功複製到剪貼簿！")
 
 # ==========================================
-# 5. 主畫面設計
+# 5. 主畫面設計 (完美還原截圖設計)
 # ==========================================
-st.title("🪲 昆蟲辨識系統")
+st.title("🪲 昆蟲辨識小助理")
+st.write("探索自然世界，學習昆蟲知識，感受生態之美！")
 st.markdown("---")
 
 image = None
 if source_option == "上傳圖片":
+    st.markdown("### 📥 上傳圖片")
     uploaded_file = st.file_uploader("請上傳昆蟲圖片", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         image = Image.open(uploaded_file)
 elif source_option == "拍照":
+    st.markdown("### 📷 拍攝圖片")
     camera_file = st.camera_input("請拍攝昆蟲")
     if camera_file:
         image = Image.open(camera_file)
@@ -149,22 +148,20 @@ elif source_option == "拍照":
 # ==========================================
 # 6. 辨識與結果顯示
 # ==========================================
+st.markdown("### 辨識結果") # 提早顯示標題以符合截圖排版
+
 if image is None:
     st.info("請先上傳或拍攝圖片")
 else:
-    # 圖片預覽，設定 use_container_width=True 自動適應寬度，解決圖片過大問題
     st.image(image, caption='原始圖片', use_container_width=True)
 
     if st.button('開始辨識', type="primary"):
-        st.markdown("### 辨識結果")
-        
         with st.spinner('AI 努力辨識中，請稍候...'):
             results = model(image)
             res_plotted = results[0].plot()
             boxes = results[0].boxes
             
             st.markdown("---")
-            # 偵測結果圖，同樣設定自動適應寬度
             st.image(res_plotted, channels="BGR", caption='AI 偵測結果', use_container_width=True)
             
             if len(boxes) > 0:
@@ -174,14 +171,12 @@ else:
                 
                 st.success(f"🎯 **偵測到物種學名： {class_name}** (信心分數：{confidence:.2f})")
                 
-                # 自動存入歷史紀錄中 (供側邊欄讀取)
                 st.session_state.history.append({
                     "class_name": class_name,
                     "confidence": confidence,
                     "image": res_plotted
                 })
                 
-                # 顯示百科資訊
                 info = INSECT_DB.get(class_name, None)
                 if info:
                     st.markdown(f"**中文名稱**：{info['chinese_name']}")
@@ -196,3 +191,7 @@ else:
                     st.warning(f"目前資料庫中尚未建檔『{class_name}』的詳細百科資訊。")
             else:
                 st.warning("圖片中沒有偵測到已知的昆蟲。")
+
+# 加入下方的精美標語頁尾
+st.markdown("---")
+st.caption("✨ 探索自然，從身邊的昆蟲開始！保護野生動物，維護生態多樣性。")
